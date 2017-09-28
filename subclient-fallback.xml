@@ -1,0 +1,13 @@
+<App_UpdateSubClientPropertiesRequest>
+	<newName>default</newName>
+	<subClientProperties>
+		<commonProperties>
+			<storageDevice>
+				<dataBackupStoragePolicy>
+					<storagePolicyName>storp00</storagePolicyName>
+				</dataBackupStoragePolicy>
+			</storageDevice>
+		</commonProperties>
+	</subClientProperties>
+</App_UpdateSubClientPropertiesRequest>
+

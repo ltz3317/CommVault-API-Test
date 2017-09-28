@@ -1,0 +1,10 @@
+<App_CreateBackupSetRequest>
+  <association>
+    <entity>
+      <appName>Virtual Server</appName>
+      <backupsetName>backupset-ESDC10WIN002POC</backupsetName>
+      <clientName>10.60.19.16</clientName>
+      <instanceName>VMware</instanceName>
+    </entity>
+  </association>
+</App_CreateBackupSetRequest>

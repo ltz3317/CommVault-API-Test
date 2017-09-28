@@ -1,0 +1,23 @@
+<App_UpdateSubClientPropertiesRequest>
+	<newName>subclient-mysql-esdc10rhl005poc</newName>
+	<subClientProperties>
+		<contentOperationType>ADD</contentOperationType>
+		<commonProperties>
+			<storageDevice>
+				<dataBackupStoragePolicy>
+					<storagePolicyName>storp01</storagePolicyName>
+				</dataBackupStoragePolicy>
+			</storageDevice>
+		</commonProperties>
+		<content>
+			<mySQLContent>
+				<databaseName>mysql</databaseName>
+			</mySQLContent>
+		</content>
+		<content>
+			<mySQLContent>
+				<databaseName>db01</databaseName>
+			</mySQLContent>
+		</content>
+	</subClientProperties>
+</App_UpdateSubClientPropertiesRequest>

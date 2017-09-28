@@ -1,0 +1,23 @@
+<App_UpdateSubClientPropertiesRequest>
+	<newName>subclient-mssql-ESDC10WIN004POC</newName>
+	<subClientProperties>
+		<commonProperties>
+			<storageDevice>
+				<dataBackupStoragePolicy>
+					<storagePolicyName>storp01</storagePolicyName>
+				</dataBackupStoragePolicy>
+				<logBackupStoragePolicy>
+					<storagePolicyName>storp01</storagePolicyName>
+				</logBackupStoragePolicy>
+			</storageDevice>
+		</commonProperties>
+			<contentOperationType>ADD</contentOperationType>
+		<content>
+		<mssqlDbContent databaseName="testdb"/>
+		</content>
+		<content>
+		<mssqlDbContent databaseName="db01"/>
+		</content>
+	</subClientProperties>
+</App_UpdateSubClientPropertiesRequest>
+

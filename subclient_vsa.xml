@@ -1,0 +1,17 @@
+<App_UpdateSubClientPropertiesRequest>
+	<newName>subclient-ESDC10WIN002POC</newName>
+	<subClientProperties>
+		<vmContentOperationType>OVERWRITE</vmContentOperationType>
+		<commonProperties>
+			<enableBackup>true</enableBackup>
+			<storageDevice>
+				<dataBackupStoragePolicy>
+					<storagePolicyName>storp01</storagePolicyName>
+				</dataBackupStoragePolicy>
+			</storageDevice>
+		</commonProperties>
+		<vmContent>
+			<children type="VMName" displayName="ESDC10WIN002POC" equalsOrNotEquals="1"/>
+		</vmContent>
+	</subClientProperties>
+</App_UpdateSubClientPropertiesRequest>

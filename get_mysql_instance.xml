@@ -1,0 +1,9 @@
+<App_GetInstancePropertiesRequest>
+	<association>
+		<entity>	
+			<clientName>esdc10rhl005poc</clientName>
+			<appName>MySQL</appName> 
+			<instanceName>inst-esdc10rhl005poc</instanceName>
+		</entity>
+	</association>
+</App_GetInstancePropertiesRequest>

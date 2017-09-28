@@ -1,0 +1,8 @@
+<App_SetBackupsetPropertiesRequest>
+  <backupsetProperties>
+    <commonBackupSet>
+      <newBackupSetName>defaultBackupSet</newBackupSetName>
+    </commonBackupSet>
+  </backupsetProperties>
+</App_SetBackupsetPropertiesRequest>
+
