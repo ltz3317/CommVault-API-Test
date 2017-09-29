@@ -3,7 +3,8 @@
 ## Set environment ##
 
 DIR=$(dirname $0)
-source $DIR/setenv.sh
+cd $DIR
+source ./setenv.sh
 
 ## Get client information ##
 
