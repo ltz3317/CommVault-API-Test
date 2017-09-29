@@ -24,7 +24,7 @@ else
 	sed -i "s/<hostName>.*<\/hostName>/<hostName>"$CLIENTNAME"<\/hostName>/" client_prop-fallback.xml
 	 
 	disp "Setting client properties."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @client_prop.xml -L $BASEURI"/Client/$CLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @client_prop.xml -L $BASEURI"/Client/$CLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 fi
 
 ## Client Group configuration ##
@@ -40,7 +40,7 @@ then
 	sed -i "s/<clientGroupName>.*<\/clientGroupName>/<clientGroupName>"$CLIENTGROUPNAME"<\/clientGroupName>/" clientgroup.xml clientgroup-fallback.xml
 
 	disp "Updating client group properties."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @clientgroup.xml -L "$BASEURI/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m //App_GenericResp -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @clientgroup.xml -L "$BASEURI/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m //App_GenericResp -o "Error code: " -v @errorCode -n
 fi
 
 ## MSSQL instance configuration ##
@@ -50,7 +50,7 @@ then
 	disp "Setting user credential for $APPNAME."
 	sed -i "s/<clientName>.*<\/clientName>/<clientName>"$CLIENTNAME"<\/clientName>/g" mssql_user_credential.xml
 	sed -i "s/<clientName>.*<\/clientName>/<clientName>"$CLIENTNAME"<\/clientName>/g" mssql_user_credential-fallback.xml
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @mssql_user_credential.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @mssql_user_credential.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 fi
 
 ## Backupset configuration ##
@@ -69,7 +69,7 @@ then
 	sed -i "s/<newBackupSetName>.*<\/newBackupSetName>/<newBackupSetName>backupset-"$CLIENTNAME"<\/newBackupSetName>/" backupset.xml
 
 	disp "Setting backup set properties."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @backupset.xml -L $BASEURI"/Backupset/$BACKUPSETID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @backupset.xml -L $BASEURI"/Backupset/$BACKUPSETID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 	echo
 elif [ "$APPNAME" = "MySQL" ]
 then
@@ -79,12 +79,12 @@ then
 	sed -i "s/<clientName>.*<\/clientName>/<clientName>"$CLIENTNAME"<\/clientName>/g" mysql_instance-fallback.xml
 	sed -i "s/<instanceName>.*<\/instanceName>/<instanceName>inst-"$CLIENTNAME"<\/instanceName>/g" mysql_instance.xml
 	sed -i "s/<instanceName>.*<\/instanceName>/<instanceName>inst-"$CLIENTNAME"<\/instanceName>/g" mysql_instance-fallback.xml
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @mysql_instance.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @mysql_instance.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 elif [ "$APPNAME" = "Virtual Server" ]
 then
 	disp "Creating backupset for Virtual Server. "
 	sed -i "s/<backupsetName>.*<\/backupsetName>/<backupsetName>backupset-"$VM"<\/backupsetName>/g" backupset_vsa.xml
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @backupset_vsa.xml -L $BASEURI"/Backupset" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @backupset_vsa.xml -L $BASEURI"/Backupset" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 fi
 
 ## Subclient configuration ##
@@ -106,7 +106,7 @@ then
 	sed -i "s/<newName>.*<\/newName>/<newName>subclient-"$CLIENTNAME"<\/newName>/" subclient.xml
 
 	disp "Setting subclient properties for $APPNAME."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @subclient.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @subclient.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 elif [ "$APPNAME" = "SQL Server" ]
 then
 	disp "Updating subclient_mssql.xml and subclient_mssql-fallback.xml for SQL Server."
@@ -120,7 +120,7 @@ then
 	done
 
 	disp "Setting subclient properties for SQL Server."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @subclient_mssql.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @subclient_mssql.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 elif [ "$APPNAME" = "MySQL" ]
 then
 	disp "Updating subclient_mysql.xml and subclient_mysql-fallback.xml for MySQL."
@@ -132,13 +132,13 @@ then
 	done
 
 	disp "Setting subclient properties for MySQL."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @subclient_mysql.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @subclient_mysql.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 elif [ "$APPNAME" = "Virtual Server" ]
 then
 	disp "Setting subclient properties for $APPNAME."
 	sed -i "s/<newName>.*<\/newName>/<newName>subclient-"$VM"<\/newName>/g" subclient_vsa.xml
 	sed -i "s/displayName=\".*\" equals/displayName=\""$VM"\" equals/g" subclient_vsa.xml
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @subclient_vsa.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @subclient_vsa.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 fi
 
 ## Schedule policy association ##

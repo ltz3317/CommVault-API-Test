@@ -16,7 +16,7 @@ else
 fi
 echo "Client ID: $CLIENTID"
 
-CURLOUT=$(curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -L $BASEURI"/Client/$CLIENTID")
+CURLOUT=$(eval $CURLCMD -L $BASEURI"/Client/$CLIENTID")
 echo $CURLOUT | xmlstarlet sel -t -m //dataInterfacePair -o "DIP: " -c ../dataInterfacePair -n
 echo $CURLOUT | xmlstarlet sel -t -m //clientEntity -o "clientEntity hostName: " -v @hostName -n
 echo $CURLOUT | xmlstarlet sel -t -m //ActivePhysicalNode -o "ActivePhysicalNode hostName: " -v @hostName -n
@@ -29,7 +29,7 @@ then
 	echo "Client Group Name: $CLIENTGROUPNAME"
 	export CLIENTGROUPID=$($DIR/get_clientgroupid_by_clientgroupname.sh)
 	echo "Client Group ID: $CLIENTGROUPID"
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -L $BASEURI"/ClientGroup/7" | xmlstarlet sel -t -m "//associatedClients[@clientName='esdc10rhl005poc']" -o "Associated Client Name: " -v @clientName -n
+	eval $CURLCMD -L $BASEURI"/ClientGroup/7" | xmlstarlet sel -t -m "//associatedClients[@clientName='esdc10rhl005poc']" -o "Associated Client Name: " -v @clientName -n
 fi
 
 ## Get backupset information ##
@@ -58,7 +58,7 @@ then
 
 	sed -i "s/<clientName>.*<\/clientName>/<clientName>$CLIENTNAME<\/clientName>/g" get_mysql_instance.xml
 	sed -i "s/<instanceName>.*<\/instanceName>/<instanceName>inst-$CLIENTNAME<\/instanceName>/g" get_mysql_instance.xml
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @get_mysql_instance.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //instanceProperties -c instance -n -c mySqlInstance -n -c mysqlStorageDevice -n
+	eval $CURLCMD -d @get_mysql_instance.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //instanceProperties -c instance -n -c mySqlInstance -n -c mysqlStorageDevice -n
 fi
 
 ## Get subclient information ##
@@ -68,17 +68,17 @@ SUBCLIENTNAME=$(echo $SUBCLIENT | awk -F ':' '{print $1}')
 SUBCLIENTID=$(echo $SUBCLIENT | awk -F ':' '{print $2}')
 echo "Subclient Name: $SUBCLIENTNAME"
 echo "Subclient ID: $SUBCLIENTID"
-curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //dataBackupStoragePolicy -o "Data Storage policy name: " -v @storagePolicyName -n
+eval $CURLCMD -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //dataBackupStoragePolicy -o "Data Storage policy name: " -v @storagePolicyName -n
 
 if [ "$APPNAME" = "SQL Server" ]
 then
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //logBackupStoragePolicy -o "Log Storage policy name: " -v @storagePolicyName -n -m //mssqlDbContent -o "DB Name: " -v @databaseName -n
+	eval $CURLCMD -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //logBackupStoragePolicy -o "Log Storage policy name: " -v @storagePolicyName -n -m //mssqlDbContent -o "DB Name: " -v @databaseName -n
 elif [ "$APPNAME" = "MySQL" ]
 then
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //logBackupStoragePolicy -o "Log Storage policy name: " -v @storagePolicyName -n -m //mySQLContent -o "Database: " -v @databaseName -n
+	eval $CURLCMD -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //logBackupStoragePolicy -o "Log Storage policy name: " -v @storagePolicyName -n -m //mySQLContent -o "Database: " -v @databaseName -n
 elif [ "$APPNAME" = "Virtual Server" ]
 then
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //children -o "VM: " -v @displayName -n
+	eval $CURLCMD -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //children -o "VM: " -v @displayName -n
 fi
 
 ## Get schedule policy ID by schedule policy name ##
@@ -88,7 +88,7 @@ echo "Schedule Policy ID: $SCHEPID"
 
 ## Getting schedule policy associations ##
 
-curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -L $BASEURI"/SchedulePolicy/$SCHEPID" | xmlstarlet sel -t -m "//associations[@subclientId='"$SUBCLIENTID"']" -o "Associated Subclient Name: " -v @subclientName -o ", Subclient ID: " -v @subclientId -n
+eval $CURLCMD -L $BASEURI"/SchedulePolicy/$SCHEPID" | xmlstarlet sel -t -m "//associations[@subclientId='"$SUBCLIENTID"']" -o "Associated Subclient Name: " -v @subclientName -o ", Subclient ID: " -v @subclientId -n
 
 ## Logout ##
 

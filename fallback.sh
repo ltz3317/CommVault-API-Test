@@ -3,7 +3,8 @@
 ## Set environment ##
 
 DIR=$(dirname $0)
-source $DIR/setenv.sh
+cd $DIR
+source ./setenv.sh
 
 ## Get information ##
 
@@ -57,11 +58,11 @@ echo
 if [ "$APPNAME" = "Windows File System" ] || [ "$APPNAME" = "Linux File System" ]
 then
 	disp "Falling-back subclients properties for $APPNAME."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @subclient-fallback.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @subclient-fallback.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 elif [ "$APPNAME" = "SQL Server" ]
 then
 	disp "Falling-back subclients properties for $APPNAME."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @subclient_mssql-fallback.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @subclient_mssql-fallback.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 fi
 
 ## Fallback backupset ##
@@ -69,15 +70,15 @@ fi
 if [ "$APPNAME" = "Windows File System" ] || [ "$APPNAME" = "Linux File System" ]
 then
 	disp "Falling-back backup set properties."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @backupset-fallback.xml -L $BASEURI"/Backupset/$BACKUPSETID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @backupset-fallback.xml -L $BASEURI"/Backupset/$BACKUPSETID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 elif [ "$APPNAME" = "MySQL" ]
 then
 	disp "Deleting MySQL instance."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @mysql_instance-fallback.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @mysql_instance-fallback.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 elif [ "$APPNAME" = "Virtual Server" ]
 then
 	disp "Deleting backupset for Virtual Server."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -X DELETE -L $BASEURI"/Backupset/byName(clientName='"$CLIENTNAME"',appName='Virtual%20Server',backupsetName='backupset-"$VM"')" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -X DELETE -L $BASEURI"/Backupset/byName(clientName='"$CLIENTNAME"',appName='Virtual%20Server',backupsetName='backupset-"$VM"')" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 fi
 
 ## Fallback user credential for MSSQL only ##
@@ -85,7 +86,7 @@ fi
 if [ "$APPNAME" = "SQL Server" ]
 then
 	disp "Falling-back $APPNAME user credential."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @mssql_user_credential-fallback.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @mssql_user_credential-fallback.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 fi
 
 if [ "$APPNAME" != "Virtual Server" ]
@@ -93,7 +94,7 @@ then
 	## Fallback client group ##
 
 	disp "Falling-back client group properties."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @clientgroup-fallback.xml -L "$BASEURI/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m //App_GenericResp -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @clientgroup-fallback.xml -L "$BASEURI/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m //App_GenericResp -o "Error code: " -v @errorCode -n
 
 	## Fallback client ##
 
