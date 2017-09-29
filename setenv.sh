@@ -9,6 +9,8 @@ B64PW="UGh5cyEwMTBneQ=="
 
 export TOKEN=$(curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -d '<DM2ContentIndexing_CheckCredentialReq mode="Webconsole" username="'$USERNAME'" password="'$B64PW'" />' -L $BASEURI"/Login" | xmlstarlet sel -t -v DM2ContentIndexing_CheckCredentialResp/@token)
 
+export CURLCMD="curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H \"Authtoken:$TOKEN\""
+
 export SCHEPNAME="schep01"
 export CLIENTGROUPNAME="clientgroup01"
 

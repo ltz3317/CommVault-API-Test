@@ -98,7 +98,7 @@ then
 	## Fallback client ##
 
 	disp "Falling-back client properties."
-	curl -s -H $HEADER1 -H $HEADER2 -H $HEADER3 -H "Authtoken:$TOKEN" -d @client_prop-fallback.xml -L $BASEURI"/Client/$CLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @client_prop-fallback.xml -L $BASEURI"/Client/$CLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 fi
 
 disp "Logging out."
