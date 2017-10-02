@@ -91,6 +91,10 @@ echo "Schedule Policy ID: $SCHEPID"
 
 eval $CURLCMD -L $BASEURI"/SchedulePolicy/$SCHEPID" | xmlstarlet sel -t -m "//associations[@subclientId='"$SUBCLIENTID"']" -o "Associated Subclient Name: " -v @subclientName -o ", Subclient ID: " -v @subclientId -n
 
+## Checking if the client is retired ##
+
+eval $CURLCMD -L $BASEURI"/Client/$CLIENTID" | xmlstarlet sel -t -m "//clientProps" -o "IsDeletedClient: " -v @IsDeletedClient -n
+
 ## Logout ##
 
 $DIR/logout.sh

@@ -1,0 +1,8 @@
+<TMMsg_ClientReconfigurationReq>
+	<clientInfo>
+		<clientName>esdc10rhl005poc</clientName>
+	</clientInfo>
+	<appTypes>
+		<appName/>
+	</appTypes>
+</TMMsg_ClientReconfigurationReq>
