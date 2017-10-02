@@ -21,7 +21,7 @@ else
 	disp "Updating client_prop.xml and client_prop-fallbackup.xml."
 	sed -i "s/<hostName>.*<\/hostName>/<hostName>"$CLIENTIP"<\/hostName>/" client_prop.xml
 	sed -i "s/<SourceInterface ClientId=\".*\" Interface=\".*\"\/>/<SourceInterface ClientId=\""$CLIENTID"\" Interface=\""$CLIENTIP"\"\/>/" client_prop.xml
-	sed -i "s/<hostName>.*<\/hostName>/<hostName>"$CLIENTNAME"<\/hostName>/" client_prop-fallback.xml
+	sed -i "s/<hostName>.*<\/hostName>/<hostName>"$CLIENTHOSTNAME"<\/hostName>/" client_prop-fallback.xml
 	 
 	disp "Setting client properties."
 	eval $CURLCMD -d @client_prop.xml -L $BASEURI"/Client/$CLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
@@ -41,6 +41,10 @@ then
 
 	disp "Updating client group properties."
 	eval $CURLCMD -d @clientgroup.xml -L "$BASEURI/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m //App_GenericResp -o "Error code: " -v @errorCode -n
+
+	disp "Restarting client services."
+	sed -i "s/clientName=\".*\"/clientName=\"$CLIENTNAME\"/g" restart_client.xml
+	eval $CURLCMD -d @restart_client.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //EVGui_GenericResp -o "Error code: " -v @errorCode -n
 fi
 
 ## MSSQL instance configuration ##

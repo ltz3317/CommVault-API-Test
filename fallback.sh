@@ -96,6 +96,10 @@ then
 	disp "Falling-back client group properties."
 	eval $CURLCMD -d @clientgroup-fallback.xml -L "$BASEURI/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m //App_GenericResp -o "Error code: " -v @errorCode -n
 
+	disp "Restarting client services."
+        sed -i "s/clientName=\".*\"/clientName=\"$CLIENTNAME\"/g" restart_client.xml
+        eval $CURLCMD -d @restart_client.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //EVGui_GenericResp -o "Error code: " -v @errorCode -n
+
 	## Fallback client ##
 
 	disp "Falling-back client properties."

@@ -23,4 +23,5 @@ disp()
 }
 
 source $(dirname ${BASH_SOURCE[0]})/testcase.sh
+export CLIENTHOSTNAME=$CLIENTNAME.esdc10.local
 
