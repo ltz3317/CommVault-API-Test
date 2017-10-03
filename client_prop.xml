@@ -2,17 +2,17 @@
 	<clientProperties>
 		<client>
 			<clientEntity>
-				<hostName>10.60.19.108</hostName>
+				<hostName>10.60.19.107</hostName>
     	 		</clientEntity>
 		</client>
 		<clientProps>
 			<dataInterfacePair active="true">
 				<DestInterface ClientId="2" Interface="10.60.19.17"/>
-				<SourceInterface ClientId="17" Interface="10.60.19.108"/>
+				<SourceInterface ClientId="20" Interface="10.60.19.107"/>
 			</dataInterfacePair>
 			<dataInterfacePair active="true">
 				<DestInterface ClientId="14" Interface="10.60.19.16"/>
-				<SourceInterface ClientId="17" Interface="10.60.19.108"/>
+				<SourceInterface ClientId="20" Interface="10.60.19.107"/>
 			</dataInterfacePair>
 			<deDuplicationProperties>
 				<cacheBufferSize>1024</cacheBufferSize>

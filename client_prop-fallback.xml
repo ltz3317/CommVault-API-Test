@@ -3,7 +3,7 @@
 	<clientProperties>
 		<client>
 			<clientEntity>
-				<hostName>esdc10rhl005poc.esdc10.local</hostName>
+				<hostName>esdc10rhl004poc.esdc10.local</hostName>
 			</clientEntity>
 		</client>
 		<clientProps>

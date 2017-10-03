@@ -1,7 +1,7 @@
 #!/bin/sh
 
-export CLIENTNAME="esdc10rhl005poc"
-export CLIENTIP="10.60.19.108"
+export CLIENTNAME="esdc10rhl004poc"
+export CLIENTIP="10.60.19.107"
 
 ## APPNAME can be "Windows File System", "SQL Server", "Linux File System", "MySQL" or "Virtual Server" ##
 export APPNAME="Linux File System"
