@@ -8,11 +8,11 @@
 		<clientProps>
 			<dataInterfacePair active="true">
 				<DestInterface ClientId="2" Interface="10.60.19.17"/>
-				<SourceInterface ClientId="20" Interface="10.60.19.107"/>
+				<SourceInterface ClientId="21" Interface="10.60.19.107"/>
 			</dataInterfacePair>
 			<dataInterfacePair active="true">
 				<DestInterface ClientId="14" Interface="10.60.19.16"/>
-				<SourceInterface ClientId="20" Interface="10.60.19.107"/>
+				<SourceInterface ClientId="21" Interface="10.60.19.107"/>
 			</dataInterfacePair>
 			<deDuplicationProperties>
 				<cacheBufferSize>1024</cacheBufferSize>

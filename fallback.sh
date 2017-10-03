@@ -78,7 +78,7 @@ then
 elif [ "$APPNAME" = "Virtual Server" ]
 then
 	disp "Deleting backupset for Virtual Server."
-	eval $CURLCMD -X DELETE -L $BASEURI"/Backupset/byName(clientName='"$CLIENTNAME"',appName='Virtual%20Server',backupsetName='backupset-"$VM"')" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -X DELETE -L \"$BASEURI"/Backupset/byName(clientName='"$CLIENTNAME"',appName='Virtual%20Server',backupsetName='backupset-"$VM"')"\" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 fi
 
 ## Fallback user credential for MSSQL only ##
