@@ -1,0 +1,16 @@
+<App_SetBackupsetPropertiesRequest>
+	<association>
+		<entity>
+			<appName>Virtual Server</appName>
+			<backupsetName>backupset-ESDC10WIN002POC</backupsetName>
+			<clientName>10.60.19.16</clientName>
+			<instanceName>VMware</instanceName>
+		</entity>
+	</association>
+	<backupsetProperties>
+		<commonBackupSet>
+			<newBackupSetName>ESDC10WIN002POC.retired</newBackupSetName>
+		</commonBackupSet>
+	</backupsetProperties>
+</App_SetBackupsetPropertiesRequest>
+
