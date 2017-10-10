@@ -21,7 +21,6 @@ CURLOUT=$(eval $CURLCMD -L $BASEURI"/Client/$CLIENTID")
 echo $CURLOUT | xmlstarlet sel -t -m //dataInterfacePair -o "DIP Active: " -v @active -n -m SourceInterface -o "SourceInterface Client ID: " -v @ClientId -n -o "Interface: " -v @Interface -n -m ../DestInterface -o "DestInterface Client ID: " -v @ClientId -n -o "Interface: " -v @Interface -n
 echo $CURLOUT | xmlstarlet sel -t -m //clientEntity -o "clientEntity hostName: " -v @hostName -n
 echo $CURLOUT | xmlstarlet sel -t -m //ActivePhysicalNode -o "ActivePhysicalNode hostName: " -v @hostName -n
-echo $CURLOUT | xmlstarlet sel -t -m //deDuplicationProperties -o "Deduplication properties: " -c ../deDuplicationProperties -n
 
 ## Get client group information ##
 

@@ -8,15 +8,6 @@
 		</client>
 		<clientProps>
 			<dataInterfacePair active="true"></dataInterfacePair>
-			<deDuplicationProperties>
-				<cacheBufferSize>1024</cacheBufferSize>
-				<clientSideDeduplication>0</clientSideDeduplication>
-				<enableClientSideDiskCache>0</enableClientSideDiskCache>
-				<enableHighLatencyOptimization>0</enableHighLatencyOptimization>
-				<enableVariableContentAlignment>0</enableVariableContentAlignment>
-				<maxCacheDb>4096</maxCacheDb>
-				<performClientSideDeduplication>1</performClientSideDeduplication>
-			</deDuplicationProperties>
 		</clientProps>
 	</clientProperties>
 </App_SetClientPropertiesRequest>
