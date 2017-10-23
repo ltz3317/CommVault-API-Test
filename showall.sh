@@ -8,12 +8,18 @@ source ./setenv.sh
 
 ## Get client information ##
 
-echo "Client Name: $CLIENTNAME"
 if [ "$APPNAME" = "Virtual Server" ]
 then
+	echo "Client Name: $CLIENTNAME"
 	export CLIENTID=$($DIR/get_vsa_clientid_by_clientname.sh)
 else
 	export CLIENTID=$($DIR/get_clientid_by_clientname.sh)
+	if [ -z "$CLIENTID" ]
+	then
+		export CLIENTNAME=$(eval $CURLCMD -L $BASEURI/Client | xmlstarlet sel -t -m "//clientEntity[starts-with(@clientName, '$CLIENTNAME.201')]" -v @clientName -n)
+		echo "Client Name: $CLIENTNAME"
+		export CLIENTID=$($DIR/get_clientid_by_clientname.sh)
+	fi
 fi
 echo "Client ID: $CLIENTID"
 
@@ -49,6 +55,10 @@ then
 	## Get backupset by client ID ##
 
 	BACKUPSET=$($DIR/get_vsa_backupset_by_clientid.sh)
+	if [ -z "$BACKUPSET" ]
+	then
+		BACKUPSET=$(eval $CURLCMD -L $BASEURI"/Backupset?clientId=$CLIENTID" | xmlstarlet sel -t -m "//backupSetEntity[starts-with(@backupsetName, '$VM.')]" -v @backupsetName -o ":" -v @backupsetId)
+	fi
 	BACKUPSETNAME=$(echo $BACKUPSET | awk -F ':' '{print $1}')
 	BACKUPSETID=$(echo $BACKUPSET | awk -F ':' '{print $2}')
 	echo "Backupset Name: $BACKUPSETNAME"

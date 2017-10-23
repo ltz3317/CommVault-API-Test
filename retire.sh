@@ -6,28 +6,56 @@ DIR=$(dirname $0)
 cd $DIR
 source ./setenv.sh
 
+TS=`date +%Y%m%d.%H%M`
+
 if [ "$APPNAME" = "Virtual Server" ]
 then
 	## Rename backupset ##
 
 	disp "Renaming backupset for $APPNAME".
-	sed -i "s/<clientName>.*<\/clientName>/<clientName>"$CLIENTNAME"<\/clientName>/g" rename_backupset_vsa.xml rename_backupset_vsa-fallback.xml
-	sed -i "s/<backupsetName>.*<\/backupsetName>/<backupsetName>backupset-"$VM"<\/backupsetName>/g" rename_backupset_vsa.xml
-	sed -i "s/<newBackupSetName>.*<\/newBackupSetName>/<newBackupSetName>"$VM".retired<\/newBackupSetName>/g" rename_backupset_vsa.xml
-	sed -i "s/<backupsetName>.*<\/backupsetName>/<backupsetName>"$VM".retired<\/backupsetName>/g" rename_backupset_vsa-fallback.xml
-	sed -i "s/<newBackupSetName>.*<\/newBackupSetName>/<newBackupSetName>backupset-"$VM"<\/newBackupSetName>/g" rename_backupset_vsa-fallback.xml
-	eval $CURLCMD -d @rename_backupset_vsa.xml -L \"$BASEURI"/Backupset/byName(clientName='"$CLIENTNAME"',appName='Virtual%20Server',backupsetName='backupset-"$VM"')"\" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L \"$BASEURI"/Backupset/byName(clientName='"$CLIENTNAME"',appName='Virtual%20Server',backupsetName='"$VM"')"\" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_SetBackupsetPropertiesRequest>
+	<association>
+		<entity>
+			<appName>Virtual Server</appName>
+			<backupsetName>$VM</backupsetName>
+			<clientName>10.60.19.16</clientName>
+			<instanceName>VMware</instanceName>
+		</entity>
+	</association>
+	<backupsetProperties>
+		<commonBackupSet>
+			<newBackupSetName>$VM.$TS</newBackupSetName>
+		</commonBackupSet>
+	</backupsetProperties>
+</App_SetBackupsetPropertiesRequest>
+BODY
 
 	## Retire subclient ##
 
 	disp "Retiring subclient for $APPNAME".
-	sed -i "s/<clientName>.*<\/clientName>/<clientName>"$CLIENTNAME"<\/clientName>/g" retire_subclient_vsa.xml retire_subclient_vsa-fallback.xml
-	sed -i "s/<backupsetName>.*<\/backupsetName>/<backupsetName>"$VM".retired<\/backupsetName>/g" retire_subclient_vsa.xml retire_subclient_vsa-fallback.xml
-	sed -i "s/<subclientName>.*<\/subclientName>/<subclientName>subclient-"$VM"<\/subclientName>/g" retire_subclient_vsa.xml
-	sed -i "s/<newName>.*<\/newName>/<newName>"$VM".retired<\/newName>/g" retire_subclient_vsa.xml
-	sed -i "s/<subclientName>.*<\/subclientName>/<subclientName>"$VM".retired<\/subclientName>/g" retire_subclient_vsa-fallback.xml
-	sed -i "s/<newName>.*<\/newName>/<newName>subclient-"$VM"<\/newName>/g" retire_subclient_vsa-fallback.xml
-	eval $CURLCMD -d @retire_subclient_vsa.xml -L \"$BASEURI"/Subclient/byName(clientName='"$CLIENTNAME"',appName='Virtual%20Server',backupsetName='"$VM".retired',subclientName='subclient-"$VM"')"\" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L \"$BASEURI"/Subclient/byName(clientName='"$CLIENTNAME"',appName='Virtual%20Server',backupsetName='"$VM.$TS"',subclientName='"$VM"')"\" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_UpdateSubClientPropertiesRequest>
+	<association>
+		<entity>
+			<appName>Virtual Server</appName>
+			<backupsetName>$VM.retired</backupsetName>
+			<clientName>10.60.19.16</clientName>
+			<instanceName>VMware</instanceName>
+			<subclientName>$VM</subclientName>
+		</entity>
+	</association>
+	<newName>$VM.$TS</newName>
+	<subClientProperties>
+		<commonProperties>
+			<enableBackup>false</enableBackup>
+		</commonProperties>
+	</subClientProperties>
+</App_UpdateSubClientPropertiesRequest>
+BODY
+
 else
 	## Get client information ##
 	
@@ -40,18 +68,38 @@ else
 	## Release client licenses ##
 	
 	disp "Releasing client licenses."
-	sed -i "s/clientName=\".*\"/clientName=\"$CLIENTNAME\"/g" release_client_license.xml
-	sed -i "s/hostName=\".*\"/hostName=\"$CLIENTIP\"/g" release_client_license.xml
-	eval $CURLCMD -d @release_client_license.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //CVGui_GenericResp -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //CVGui_GenericResp -o "Error code: " -v @errorCode -n
+
+<TMMsg_ReleaseLicenseReq isClientLevelOperation="1">
+	<clientEntity _type_="CLIENT_ENTITY" clientName="$CLIENTNAME"/>
+	<licenseTypes appType="0" licenseType="0" licenseName=""/>
+</TMMsg_ReleaseLicenseReq>
+BODY
 	
 	## Rename client ##
 	disp "Renaming client."
-	sed -i "s/<clientName>.*<\/clientName>/<clientName>"$CLIENTNAME"<\/clientName>/g" client_prop-retire.xml
-	sed -i "s/<newName>.*<\/newName>/<newName>"$CLIENTNAME".retired<\/newName>/g" client_prop-retire.xml
-	sed -i "s/<hostName>.*<\/hostName>/<hostName>"$CLIENTHOSTNAME".retired<\/hostName>/g" client_prop-retire.xml
-	sed -i "s/<clientName>.*<\/clientName>/<clientName>"$CLIENTNAME".retired<\/clientName>/g" client_prop-retire_fallback.xml
-	sed -i "s/<newName>.*<\/newName>/<newName>"$CLIENTNAME"<\/newName>/g" client_prop-retire_fallback.xml
-	sed -i "s/<hostName>.*<\/hostName>/<hostName>"$CLIENTIP"<\/hostName>/g" client_prop-retire_fallback.xml
-	eval $CURLCMD -d @client_prop-retire.xml -L $BASEURI"/Client/$CLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L $BASEURI"/Client/$CLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_SetClientPropertiesRequest>
+	<association>
+		<entity>
+			<clientName>$CLIENTNAME</clientName>
+			<newName>$CLIENTNAME.$TS</newName>
+		</entity>
+	</association>
+	<clientProperties>
+		<client>
+			<clientEntity>
+				<hostName>$CLIENTHOSTNAME.$TS</hostName>
+    	 		</clientEntity>
+		</client>
+	</clientProperties>
+</App_SetClientPropertiesRequest>
+BODY
+
 fi
+
+## Logout ##
+
+$DIR/logout.sh
 

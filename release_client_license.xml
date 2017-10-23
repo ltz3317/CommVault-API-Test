@@ -1,4 +1,0 @@
-<TMMsg_ReleaseLicenseReq isClientLevelOperation="1">
-	<clientEntity _type_="CLIENT_ENTITY" clientName="esdc10rhl004poc"/>
-	<licenseTypes appType="0" licenseType="0" licenseName=""/>
-</TMMsg_ReleaseLicenseReq>
