@@ -1,4 +1,0 @@
-<EVGui_ServiceControlRequest action="RESTART">
-	<services allServices="true"/>
-	<client clientName="esdc10rhl004poc"/>
-</EVGui_ServiceControlRequest>

@@ -1,8 +1,0 @@
-<App_SetBackupsetPropertiesRequest>
-  <backupsetProperties>
-    <commonBackupSet>
-      <newBackupSetName>backupset-esdc10rhl004poc</newBackupSetName>
-    </commonBackupSet>
-  </backupsetProperties>
-</App_SetBackupsetPropertiesRequest>
-
