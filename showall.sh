@@ -57,9 +57,19 @@ elif [ "$APPNAME" = "MySQL" ]
 then
 	## Get MySQL instance properties ##
 
-	sed -i "s/<clientName>.*<\/clientName>/<clientName>$CLIENTNAME<\/clientName>/g" get_mysql_instance.xml
-	sed -i "s/<instanceName>.*<\/instanceName>/<instanceName>inst-$CLIENTNAME<\/instanceName>/g" get_mysql_instance.xml
-	eval $CURLCMD -d @get_mysql_instance.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //instanceProperties -c instance -n -c mySqlInstance -n -c mysqlStorageDevice -n
+	eval $CURLCMD -d @- << BODY -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //instanceProperties -c instance -n -c mySqlInstance -n -c mysqlStorageDevice -n
+
+<App_GetInstancePropertiesRequest>
+	<association>
+		<entity>	
+			<clientName>$CLIENTNAME</clientName>
+			<appName>MySQL</appName> 
+			<instanceName>$CLIENTNAME</instanceName>
+		</entity>
+	</association>
+</App_GetInstancePropertiesRequest>
+BODY
+
 fi
 
 ## Get subclient information ##
