@@ -51,18 +51,54 @@ echo "Schedule Policy ID: $SCHEPID"
 
 disp "Removing schedule policy association"
 curl -s -H $HEADER1 -H $HEADER3 -H "Authtoken:$TOKEN" -d "SubclientId=$SUBCLIENTID" -X DELETE -L $BASEURI"/Task/"$SCHEPID"/Entity" | xmlstarlet sel -t -m //TMMsg_GenericResp -o "Error code: " -v @errorCode -n
-echo
 
 ## Fallback subclient ##
 
 if [ "$APPNAME" = "Windows File System" ] || [ "$APPNAME" = "Linux File System" ]
 then
 	disp "Falling-back subclients properties for $APPNAME."
-	eval $CURLCMD -d @subclient-fallback.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_UpdateSubClientPropertiesRequest>
+	<newName>default</newName>
+	<subClientProperties>
+		<commonProperties>
+			<storageDevice>
+				<dataBackupStoragePolicy>
+					<storagePolicyName>storp00</storagePolicyName>
+				</dataBackupStoragePolicy>
+			</storageDevice>
+		</commonProperties>
+	</subClientProperties>
+</App_UpdateSubClientPropertiesRequest>
+BODY
+
 elif [ "$APPNAME" = "SQL Server" ]
 then
 	disp "Falling-back subclients properties for $APPNAME."
-	eval $CURLCMD -d @subclient_mssql-fallback.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	XMLBODY="
+<App_UpdateSubClientPropertiesRequest>
+	<newName>default</newName>
+	<subClientProperties>
+		<commonProperties>
+			<storageDevice>
+				<dataBackupStoragePolicy>
+					<storagePolicyName>storp00</storagePolicyName>
+				</dataBackupStoragePolicy>
+				<logBackupStoragePolicy>
+					<storagePolicyName>storp00</storagePolicyName>
+				</logBackupStoragePolicy>
+			</storageDevice>
+		</commonProperties>
+			<contentOperationType>DELETE</contentOperationType>
+	</subClientProperties>
+</App_UpdateSubClientPropertiesRequest>
+"
+	for DB in $DATABASES
+	do
+		XMLBODY=$(echo "$XMLBODY" | sed "s/<\/subClientProperties>/<content><mssqlDbContent><databaseName>$DB<\/databaseName><\/mssqlDbContent><\/content><\/subClientProperties>/g")
+	done
+	eval $CURLCMD -d \"$XMLBODY\" -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 fi
 
 ## Fallback backupset ##
@@ -70,15 +106,37 @@ fi
 if [ "$APPNAME" = "Windows File System" ] || [ "$APPNAME" = "Linux File System" ]
 then
 	disp "Falling-back backup set properties."
-	eval $CURLCMD -d @backupset-fallback.xml -L $BASEURI"/Backupset/$BACKUPSETID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L $BASEURI"/Backupset/$BACKUPSETID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_SetBackupsetPropertiesRequest>
+  <backupsetProperties>
+    <commonBackupSet>
+      <newBackupSetName>defaultBackupSet</newBackupSetName>
+    </commonBackupSet>
+  </backupsetProperties>
+</App_SetBackupsetPropertiesRequest>
+BODY
+
 elif [ "$APPNAME" = "MySQL" ]
 then
 	disp "Deleting MySQL instance."
-	eval $CURLCMD -d @mysql_instance-fallback.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_DeleteInstanceRequest>
+	<association>
+		<entity>
+			<clientName>$CLIENTNAME</clientName>
+			<appName>MySQL</appName>
+			<instanceName>$CLIENTNAME</instanceName>
+		</entity>
+	</association>
+</App_DeleteInstanceRequest>
+BODY
+
 elif [ "$APPNAME" = "Virtual Server" ]
 then
 	disp "Deleting backupset for Virtual Server."
-	eval $CURLCMD -X DELETE -L \"$BASEURI"/Backupset/byName(clientName='"$CLIENTNAME"',appName='Virtual%20Server',backupsetName='backupset-"$VM"')"\" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -X DELETE -L \"$BASEURI"/Backupset/byName(clientName='"$CLIENTNAME"',appName='Virtual%20Server',backupsetName='"$VM"')"\" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 fi
 
 ## Fallback user credential for MSSQL only ##
@@ -86,7 +144,34 @@ fi
 if [ "$APPNAME" = "SQL Server" ]
 then
 	disp "Falling-back $APPNAME user credential."
-	eval $CURLCMD -d @mssql_user_credential-fallback.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_SetAgentPropertiesRequest>
+	<agentProperties>
+		<idaEntity>
+			<appName>SQL Server</appName>
+			<clientName>$CLIENTNAME</clientName>
+		</idaEntity>
+		<sql61Prop>
+			<overrideHigherLevelSettings>
+				<overrideGlobalAuthentication>false</overrideGlobalAuthentication>
+				<useLocalSystemAccount>false</useLocalSystemAccount>
+				<userAccount>
+					<password>password</password>
+					<userName>administrator</userName>
+				</userAccount>
+			</overrideHigherLevelSettings>
+		</sql61Prop>
+	</agentProperties>
+	<association>
+		<entity>
+			<appName>SQL Server</appName>
+			<clientName>$CLIENTNAME</clientName>
+		</entity>
+	</association>
+</App_SetAgentPropertiesRequest>
+BODY
+
 fi
 
 if [ "$APPNAME" != "Virtual Server" ]
@@ -94,16 +179,52 @@ then
 	## Fallback client group ##
 
 	disp "Falling-back client group properties."
-	eval $CURLCMD -d @clientgroup-fallback.xml -L "$BASEURI/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m //App_GenericResp -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L "$BASEURI/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m //App_GenericResp -o "Error code: " -v @errorCode -n
+
+<App_PerformClientGroupReq>
+	<clientGroupOperationType>Update</clientGroupOperationType>
+	<clientGroupDetail>
+		<associatedClientsOperationType>3</associatedClientsOperationType>
+		<associatedClients>
+			<clientName>$CLIENTNAME</clientName>
+		</associatedClients>
+		<clientGroup>
+			<clientGroupName>$CLIENTGROUPNAME</clientGroupName>
+		</clientGroup>
+	</clientGroupDetail>
+</App_PerformClientGroupReq>
+BODY
 
 	disp "Restarting client services."
-        sed -i "s/clientName=\".*\"/clientName=\"$CLIENTNAME\"/g" restart_client.xml
-        eval $CURLCMD -d @restart_client.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //EVGui_GenericResp -o "Error code: " -v @errorCode -n
+        eval $CURLCMD -d @- << BODY -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //EVGui_GenericResp -o "Error code: " -v @errorCode -n
+
+<EVGui_ServiceControlRequest action="RESTART">
+	<services allServices="true"/>
+	<client clientName="$CLIENTNAME"/>
+</EVGui_ServiceControlRequest>
+BODY
+
+	sleep 90	## Let the iDataAgent restart finishes. ##
 
 	## Fallback client ##
 
 	disp "Falling-back client properties."
-	eval $CURLCMD -d @client_prop-fallback.xml -L $BASEURI"/Client/$CLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L $BASEURI"/Client/$CLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_SetClientPropertiesRequest>
+	<clientProperties>
+		<client>
+			<clientEntity>
+				<hostName>$CLIENTHOSTNAME</hostName>
+			</clientEntity>
+		</client>
+		<clientProps>
+			<dataInterfacePair active="true"></dataInterfacePair>
+		</clientProps>
+	</clientProperties>
+</App_SetClientPropertiesRequest>
+BODY
+
 fi
 
 disp "Logging out."

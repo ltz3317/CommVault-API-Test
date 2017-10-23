@@ -18,13 +18,31 @@ then
 else
 	export CLIENTID=$($DIR/get_clientid_by_clientname.sh)
 	echo "Client ID: $CLIENTID"
-	disp "Updating client_prop.xml and client_prop-fallbackup.xml."
-	sed -i "s/<hostName>.*<\/hostName>/<hostName>"$CLIENTIP"<\/hostName>/" client_prop.xml
-	sed -i "s/<SourceInterface ClientId=\".*\" Interface=\".*\"\/>/<SourceInterface ClientId=\""$CLIENTID"\" Interface=\""$CLIENTIP"\"\/>/" client_prop.xml
-	sed -i "s/<hostName>.*<\/hostName>/<hostName>"$CLIENTHOSTNAME"<\/hostName>/" client_prop-fallback.xml
 	 
 	disp "Setting client properties."
-	eval $CURLCMD -d @client_prop.xml -L $BASEURI"/Client/$CLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L $BASEURI"/Client/$CLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_SetClientPropertiesRequest>
+	<clientProperties>
+		<client>
+			<clientEntity>
+				<hostName>$CLIENTIP</hostName>
+    	 		</clientEntity>
+		</client>
+		<clientProps>
+			<dataInterfacePair active="true">
+				<DestInterface ClientId="2" Interface="10.60.19.17"/>
+				<SourceInterface ClientId="$CLIENTID" Interface="$CLIENTIP"/>
+			</dataInterfacePair>
+			<dataInterfacePair active="true">
+				<DestInterface ClientId="14" Interface="10.60.19.16"/>
+				<SourceInterface ClientId="$CLIENTID" Interface="$CLIENTIP"/>
+			</dataInterfacePair>
+		</clientProps>
+	</clientProperties>
+</App_SetClientPropertiesRequest>
+BODY
+
 fi
 
 ## Client Group configuration ##
@@ -35,16 +53,34 @@ then
 	echo "Client Group Name: $CLIENTGROUPNAME"
 	export CLIENTGROUPID=$($DIR/get_clientgroupid_by_clientgroupname.sh)
 	echo "Client Group ID: $CLIENTGROUPID"
-	disp "Updating clientgroup.xml and clientgroup-fallback.xml"
-	sed -i "s/<clientName>.*<\/clientName>/<clientName>"$CLIENTNAME"<\/clientName>/" clientgroup.xml clientgroup-fallback.xml
-	sed -i "s/<clientGroupName>.*<\/clientGroupName>/<clientGroupName>"$CLIENTGROUPNAME"<\/clientGroupName>/" clientgroup.xml clientgroup-fallback.xml
 
 	disp "Updating client group properties."
-	eval $CURLCMD -d @clientgroup.xml -L "$BASEURI/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m //App_GenericResp -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L "$BASEURI/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m //App_GenericResp -o "Error code: " -v @errorCode -n
+
+<App_PerformClientGroupReq>
+	<clientGroupOperationType>Update</clientGroupOperationType>
+	<clientGroupDetail>
+		<associatedClientsOperationType>2</associatedClientsOperationType>
+		<associatedClients>
+			<clientName>$CLIENTNAME</clientName>
+		</associatedClients>
+		<clientGroup>
+			<clientGroupName>$CLIENTGROUPNAME</clientGroupName>
+		</clientGroup>
+	</clientGroupDetail>
+</App_PerformClientGroupReq>
+BODY
 
 	disp "Restarting client services."
-	sed -i "s/clientName=\".*\"/clientName=\"$CLIENTNAME\"/g" restart_client.xml
-	eval $CURLCMD -d @restart_client.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //EVGui_GenericResp -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //EVGui_GenericResp -o "Error code: " -v @errorCode -n
+
+<EVGui_ServiceControlRequest action="RESTART">
+	<services allServices="true"/>
+	<client clientName="$CLIENTNAME"/>
+</EVGui_ServiceControlRequest>
+BODY
+
+	sleep 60	## Let the iDataAgent restart finishes. ##
 fi
 
 ## MSSQL instance configuration ##
@@ -52,9 +88,34 @@ fi
 if [ "$APPNAME" = "SQL Server" ]
 then
 	disp "Setting user credential for $APPNAME."
-	sed -i "s/<clientName>.*<\/clientName>/<clientName>"$CLIENTNAME"<\/clientName>/g" mssql_user_credential.xml
-	sed -i "s/<clientName>.*<\/clientName>/<clientName>"$CLIENTNAME"<\/clientName>/g" mssql_user_credential-fallback.xml
-	eval $CURLCMD -d @mssql_user_credential.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_SetAgentPropertiesRequest>
+	<agentProperties>
+		<idaEntity>
+			<appName>SQL Server</appName>
+			<clientName>$CLIENTNAME</clientName>
+		</idaEntity>
+		<sql61Prop>
+			<overrideHigherLevelSettings>
+				<overrideGlobalAuthentication>true</overrideGlobalAuthentication>
+				<useLocalSystemAccount>false</useLocalSystemAccount>
+				<userAccount>
+					<password>password</password>
+					<userName>administrator</userName>
+				</userAccount>
+			</overrideHigherLevelSettings>
+		</sql61Prop>
+	</agentProperties>
+	<association>
+		<entity>
+			<appName>SQL Server</appName>
+			<clientName>$CLIENTNAME</clientName>
+		</entity>
+	</association>
+</App_SetAgentPropertiesRequest>
+BODY
+
 fi
 
 ## Backupset configuration ##
@@ -67,28 +128,80 @@ then
 	BACKUPSETID=$(echo $BACKUPSET | awk -F ':' '{print $2}')
 	echo "Backupset Name: $BACKUPSETNAME"
 	echo "Backupset ID: $BACKUPSETID"
-	
-	disp "Updating backupset-fallback.xml and backupset.xml."
-	sed -i "s/<newBackupSetName>.*<\/newBackupSetName>/<newBackupSetName>"$BACKUPSETNAME"<\/newBackupSetName>/" backupset-fallback.xml
-	sed -i "s/<newBackupSetName>.*<\/newBackupSetName>/<newBackupSetName>backupset-"$CLIENTNAME"<\/newBackupSetName>/" backupset.xml
 
 	disp "Setting backup set properties."
-	eval $CURLCMD -d @backupset.xml -L $BASEURI"/Backupset/$BACKUPSETID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
-	echo
+	eval $CURLCMD -d @- << BODY -L $BASEURI"/Backupset/$BACKUPSETID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_SetBackupsetPropertiesRequest>
+  <backupsetProperties>
+    <commonBackupSet>
+      <newBackupSetName>$CLIENTNAME</newBackupSetName>
+    </commonBackupSet>
+  </backupsetProperties>
+</App_SetBackupsetPropertiesRequest>
+BODY
+
 elif [ "$APPNAME" = "MySQL" ]
 then
 	disp "Creating MySQL instance."
-	sleep 5
-	sed -i "s/<clientName>.*<\/clientName>/<clientName>"$CLIENTNAME"<\/clientName>/g" mysql_instance.xml
-	sed -i "s/<clientName>.*<\/clientName>/<clientName>"$CLIENTNAME"<\/clientName>/g" mysql_instance-fallback.xml
-	sed -i "s/<instanceName>.*<\/instanceName>/<instanceName>inst-"$CLIENTNAME"<\/instanceName>/g" mysql_instance.xml
-	sed -i "s/<instanceName>.*<\/instanceName>/<instanceName>inst-"$CLIENTNAME"<\/instanceName>/g" mysql_instance-fallback.xml
-	eval $CURLCMD -d @mysql_instance.xml -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_CreateInstanceRequest>
+<instanceProperties>
+		<instance>
+			<clientName>$CLIENTNAME</clientName>
+			<appName>MySQL</appName>
+			<instanceName>$CLIENTNAME</instanceName>
+		</instance>
+		<security>
+			<associatedUserGroups>
+				<userGroupName/>
+			</associatedUserGroups>
+			<associatedUserGroupsOperationType>ADD</associatedUserGroupsOperationType>
+		</security>
+		<mySqlInstance>
+			<BinaryDirectory>/usr/bin</BinaryDirectory>
+			<LogDataDirectory>/var/log</LogDataDirectory>
+			<ConfigFile>/etc/my.cnf</ConfigFile>
+			<port>/var/lib/mysql/mysql.sock</port>
+			<EnableAutoDiscovery/>
+			<SAUser>
+				<userName>root</userName>
+				<password>Phys!010gy</password>
+			</SAUser>
+			<unixUser>
+				<userName>root</userName>
+			</unixUser>
+			<mysqlStorageDevice>
+				<logBackupStoragePolicy>
+					<storagePolicyName>$STORAGEPOLICY</storagePolicyName>
+				</logBackupStoragePolicy>
+				<commandLineStoragePolicy>
+					<storagePolicyName>$STORAGEPOLICY</storagePolicyName>
+				</commandLineStoragePolicy>
+			</mysqlStorageDevice>
+		</mySqlInstance>          
+	</instanceProperties>
+</App_CreateInstanceRequest>
+BODY
+
 elif [ "$APPNAME" = "Virtual Server" ]
 then
 	disp "Creating backupset for Virtual Server. "
-	sed -i "s/<backupsetName>.*<\/backupsetName>/<backupsetName>backupset-"$VM"<\/backupsetName>/g" backupset_vsa.xml
-	eval $CURLCMD -d @backupset_vsa.xml -L $BASEURI"/Backupset" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L $BASEURI"/Backupset" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_CreateBackupSetRequest>
+	<association>
+		<entity>
+			<appName>Virtual Server</appName>
+			<backupsetName>$VM</backupsetName>
+			<clientName>$CLIENTNAME</clientName>
+			<instanceName>VMware</instanceName>
+		</entity>
+	</association>
+</App_CreateBackupSetRequest>
+BODY
+
 fi
 
 ## Subclient configuration ##
@@ -105,44 +218,99 @@ echo "Subclient ID: $SUBCLIENTID"
 
 if [ "$APPNAME" = "Windows File System" ] || [ "$APPNAME" = "Linux File System" ]
 then
-	disp "Updating subclient.xml and subclient-fallback.xml for $APPNAME."
-	sed -i "s/<newName>.*<\/newName>/<newName>"$SUBCLIENTNAME"<\/newName>/" subclient-fallback.xml
-	sed -i "s/<newName>.*<\/newName>/<newName>subclient-"$CLIENTNAME"<\/newName>/" subclient.xml
-
 	disp "Setting subclient properties for $APPNAME."
-	eval $CURLCMD -d @subclient.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_UpdateSubClientPropertiesRequest>
+        <newName>$CLIENTNAME</newName>
+        <subClientProperties>
+                <commonProperties>
+                        <storageDevice>
+                                <dataBackupStoragePolicy>
+                                        <storagePolicyName>$STORAGEPOLICY</storagePolicyName>
+                                </dataBackupStoragePolicy>
+                        </storageDevice>
+                </commonProperties>
+        </subClientProperties>
+</App_UpdateSubClientPropertiesRequest>
+BODY
+
 elif [ "$APPNAME" = "SQL Server" ]
 then
-	disp "Updating subclient_mssql.xml and subclient_mssql-fallback.xml for SQL Server."
-	cp -p subclient_mssql.tpl subclient_mssql.xml
-	cp -p subclient_mssql-fallback.tpl subclient_mssql-fallback.xml
-	sed -i "s/<newName>.*<\/newName>/<newName>"$SUBCLIENTNAME"<\/newName>/" subclient_mssql-fallback.xml
-	sed -i "s/<newName>.*<\/newName>/<newName>subclient-mssql-"$CLIENTNAME"<\/newName>/" subclient_mssql.xml
+	XMLBODY="
+<App_UpdateSubClientPropertiesRequest>
+	<newName>$CLIENTNAME</newName>
+	<subClientProperties>
+		<commonProperties>
+			<storageDevice>
+				<dataBackupStoragePolicy>
+					<storagePolicyName>$STORAGEPOLICY</storagePolicyName>
+				</dataBackupStoragePolicy>
+				<logBackupStoragePolicy>
+					<storagePolicyName>$STORAGEPOLICY</storagePolicyName>
+				</logBackupStoragePolicy>
+			</storageDevice>
+		</commonProperties>
+		<contentOperationType>ADD</contentOperationType>
+	</subClientProperties>
+</App_UpdateSubClientPropertiesRequest>
+"
+
 	for DB in $DATABASES
 	do
-		sed -i "s/<\/subClientProperties>/\t<content>\n\t\t<mssqlDbContent databaseName=\"$DB\"\/>\n\t\t<\/content>\n\t<\/subClientProperties>/g" subclient_mssql.xml subclient_mssql-fallback.xml
+		XMLBODY=$(echo "$XMLBODY" | sed "s/<\/subClientProperties>/<content><mssqlDbContent><databaseName>$DB<\/databaseName><\/mssqlDbContent><\/content><\/subClientProperties>/g")
 	done
 
 	disp "Setting subclient properties for SQL Server."
-	eval $CURLCMD -d @subclient_mssql.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d \"$XMLBODY\" -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 elif [ "$APPNAME" = "MySQL" ]
 then
-	disp "Updating subclient_mysql.xml and subclient_mysql-fallback.xml for MySQL."
-	cp -p subclient_mysql.tpl subclient_mysql.xml
-	sed -i "s/<newName>.*<\/newName>/<newName>subclient-mysql-"$CLIENTNAME"<\/newName>/" subclient_mysql.xml
+	XMLBODY="
+<App_UpdateSubClientPropertiesRequest>
+	<newName>$CLIENTNAME</newName>
+	<subClientProperties>
+		<contentOperationType>ADD</contentOperationType>
+		<commonProperties>
+			<storageDevice>
+				<dataBackupStoragePolicy>
+					<storagePolicyName>$STORAGEPOLICY</storagePolicyName>
+				</dataBackupStoragePolicy>
+			</storageDevice>
+		</commonProperties>
+	</subClientProperties>
+</App_UpdateSubClientPropertiesRequest>
+"
 	for DB in $DATABASES
 	do
-		sed -i "s/<\/subClientProperties>/\t<content>\n\t\t\t<mySQLContent>\n\t\t\t\t<databaseName>$DB<\/databaseName>\n\t\t\t<\/mySQLContent>\n\t\t<\/content>\n\t<\/subClientProperties>/g" subclient_mysql.xml
+		XMLBODY=$(echo "$XMLBODY" | sed "s/<\/subClientProperties>/\t<content>\n\t\t\t<mySQLContent>\n\t\t\t\t<databaseName>$DB<\/databaseName>\n\t\t\t<\/mySQLContent>\n\t\t<\/content>\n\t<\/subClientProperties>/g")
 	done
 
 	disp "Setting subclient properties for MySQL."
-	eval $CURLCMD -d @subclient_mysql.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d \"$XMLBODY\" -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 elif [ "$APPNAME" = "Virtual Server" ]
 then
 	disp "Setting subclient properties for $APPNAME."
-	sed -i "s/<newName>.*<\/newName>/<newName>subclient-"$VM"<\/newName>/g" subclient_vsa.xml
-	sed -i "s/displayName=\".*\" equals/displayName=\""$VM"\" equals/g" subclient_vsa.xml
-	eval $CURLCMD -d @subclient_vsa.xml -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	eval $CURLCMD -d @- << BODY -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+
+<App_UpdateSubClientPropertiesRequest>
+	<newName>$VM</newName>
+	<subClientProperties>
+		<vmContentOperationType>OVERWRITE</vmContentOperationType>
+		<commonProperties>
+			<enableBackup>true</enableBackup>
+			<storageDevice>
+				<dataBackupStoragePolicy>
+					<storagePolicyName>$STORAGEPOLICY</storagePolicyName>
+				</dataBackupStoragePolicy>
+			</storageDevice>
+		</commonProperties>
+		<vmContent>
+			<children type="VMName" displayName="$VM" equalsOrNotEquals="1"/>
+		</vmContent>
+	</subClientProperties>
+</App_UpdateSubClientPropertiesRequest>
+BODY
+
 fi
 
 ## Schedule policy association ##
@@ -153,7 +321,6 @@ echo "Schedule Policy ID: $SCHEPID"
 
 disp "Adding schedule policy association"
 curl -s -H $HEADER1 -H $HEADER3 -H "Authtoken:$TOKEN" -d "SubclientId=$SUBCLIENTID" -L $BASEURI"/Task/"$SCHEPID"/Entity/add" | xmlstarlet sel -t -m //TMMsg_GenericResp -o "Error code: " -v @errorCode -n
-echo
 
 ## Logout ##
 

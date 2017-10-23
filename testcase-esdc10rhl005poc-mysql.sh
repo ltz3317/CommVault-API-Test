@@ -2,6 +2,7 @@
 
 export CLIENTNAME="esdc10rhl005poc"
 export CLIENTIP="10.60.19.108"
+export STORAGEPOLICY="storp01"
 
 ## APPNAME can be "Windows File System", "SQL Server", "Linux File System", "MySQL" or "Virtual Server" ##
 export APPNAME="MySQL"

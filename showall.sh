@@ -29,7 +29,8 @@ then
 	echo "Client Group Name: $CLIENTGROUPNAME"
 	export CLIENTGROUPID=$($DIR/get_clientgroupid_by_clientgroupname.sh)
 	echo "Client Group ID: $CLIENTGROUPID"
-	eval $CURLCMD -L $BASEURI"/ClientGroup/7" | xmlstarlet sel -t -m "//associatedClients[@clientName='esdc10rhl005poc']" -o "Associated Client Name: " -v @clientName -n
+	## eval $CURLCMD -L $BASEURI"/ClientGroup/7" | xmlstarlet sel -t -m "//associatedClients[@clientName='esdc10rhl005poc']" -o "Associated Client Name: " -v @clientName -n
+	eval $CURLCMD -L $BASEURI"/ClientGroup/7" | xmlstarlet sel -t -m "//associatedClients[@clientName='"$CLIENTNAME"']" -o "Associated Client Name: " -v @clientName -n
 fi
 
 ## Get backupset information ##
@@ -68,17 +69,20 @@ SUBCLIENTNAME=$(echo $SUBCLIENT | awk -F ':' '{print $1}')
 SUBCLIENTID=$(echo $SUBCLIENT | awk -F ':' '{print $2}')
 echo "Subclient Name: $SUBCLIENTNAME"
 echo "Subclient ID: $SUBCLIENTID"
-eval $CURLCMD -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //dataBackupStoragePolicy -o "Data Storage policy name: " -v @storagePolicyName -n
-
-if [ "$APPNAME" = "SQL Server" ]
+if [ ! -z "$SUBCLIENTID" ]
 then
-	eval $CURLCMD -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //logBackupStoragePolicy -o "Log Storage policy name: " -v @storagePolicyName -n -m //mssqlDbContent -o "DB Name: " -v @databaseName -n
-elif [ "$APPNAME" = "MySQL" ]
-then
-	eval $CURLCMD -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //logBackupStoragePolicy -o "Log Storage policy name: " -v @storagePolicyName -n -m //mySQLContent -o "Database: " -v @databaseName -n
-elif [ "$APPNAME" = "Virtual Server" ]
-then
-	eval $CURLCMD -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //children -o "VM: " -v @displayName -n
+	eval $CURLCMD -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //dataBackupStoragePolicy -o "Data Storage policy name: " -v @storagePolicyName -n
+	
+	if [ "$APPNAME" = "SQL Server" ]
+	then
+		eval $CURLCMD -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //logBackupStoragePolicy -o "Log Storage policy name: " -v @storagePolicyName -n -m //mssqlDbContent -o "DB Name: " -v @databaseName -n
+	elif [ "$APPNAME" = "MySQL" ]
+	then
+		eval $CURLCMD -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //logBackupStoragePolicy -o "Log Storage policy name: " -v @storagePolicyName -n -m //mySQLContent -o "Database: " -v @databaseName -n
+	elif [ "$APPNAME" = "Virtual Server" ]
+	then
+		eval $CURLCMD -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //children -o "VM: " -v @displayName -n
+	fi
 fi
 
 ## Get schedule policy ID by schedule policy name ##
