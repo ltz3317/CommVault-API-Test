@@ -8,11 +8,16 @@ source ./setenv.sh
 
 if [ "$APPNAME" = "Virtual Server" ]
 then
+	disp "Getting client ID by client name."
+	echo "Client Name: $CLIENTNAME"
+	export CLIENTID=$($DIR/get_vsa_clientid_by_clientname.sh)
+        echo "Client ID: $CLIENTID"
+
 	## Fallback subclient ##
 
 	disp "Falling back subclient for $APPNAME."
-	BACKUPSETNAME=$(eval $CURLCMD -L $BASEURI/Backupset?clientId=14 | xmlstarlet sel -t -m "//backupSetEntity[starts-with(@backupsetName, '$VM.')]" -v @backupsetName)
-	SUBCLIENTNAME=$(eval $CURLCMD -L $BASEURI/Subclient?clientId=14 | xmlstarlet sel -t -m "//subClientEntity[starts-with(@subclientName, '$VM.201')]" -v @subclientName)
+	BACKUPSETNAME=$(eval $CURLCMD -L $BASEURI/Backupset?clientId=$CLIENTID | xmlstarlet sel -t -m "//backupSetEntity[starts-with(@backupsetName, '$VM.201')]" -v @backupsetName)
+	SUBCLIENTNAME=$(eval $CURLCMD -L $BASEURI/Subclient?clientId=$CLIENTID | xmlstarlet sel -t -m "//subClientEntity[starts-with(@subclientName, '$VM.201')]" -v @subclientName)
 	eval $CURLCMD -d @- << BODY -L \"$BASEURI"/Subclient/byName(clientName='"$CLIENTNAME"',appName='Virtual%20Server',backupsetName='"$BACKUPSETNAME"',subclientName='"$SUBCLIENTNAME"')"\" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 
 <App_UpdateSubClientPropertiesRequest>
