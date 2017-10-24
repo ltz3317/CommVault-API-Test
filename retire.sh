@@ -20,7 +20,7 @@ then
 		<entity>
 			<appName>Virtual Server</appName>
 			<backupsetName>$VM</backupsetName>
-			<clientName>10.60.19.16</clientName>
+			<clientName>$CLIENTNAME</clientName>
 			<instanceName>VMware</instanceName>
 		</entity>
 	</association>
@@ -41,8 +41,8 @@ BODY
 	<association>
 		<entity>
 			<appName>Virtual Server</appName>
-			<backupsetName>$VM.retired</backupsetName>
-			<clientName>10.60.19.16</clientName>
+			<backupsetName>$VM.$TS</backupsetName>
+			<clientName>$CLIENTNAME</clientName>
 			<instanceName>VMware</instanceName>
 			<subclientName>$VM</subclientName>
 		</entity>
@@ -101,5 +101,6 @@ fi
 
 ## Logout ##
 
+disp "Logging out."
 $DIR/logout.sh
 

@@ -44,7 +44,7 @@ BODY
 		<entity>
 			<appName>Virtual Server</appName>
 			<backupsetName>$BACKUPSETNAME</backupsetName>
-			<clientName>10.60.19.16</clientName>
+			<clientName>$CLIENTNAME</clientName>
 			<instanceName>VMware</instanceName>
 		</entity>
 	</association>
