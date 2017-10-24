@@ -75,7 +75,7 @@ then
 		<commonProperties>
 			<storageDevice>
 				<dataBackupStoragePolicy>
-					<storagePolicyName>storp00</storagePolicyName>
+					<storagePolicyName>$OLDSTORAGEPOLICY</storagePolicyName>
 				</dataBackupStoragePolicy>
 			</storageDevice>
 		</commonProperties>
@@ -93,10 +93,10 @@ then
 		<commonProperties>
 			<storageDevice>
 				<dataBackupStoragePolicy>
-					<storagePolicyName>storp00</storagePolicyName>
+					<storagePolicyName>$OLDSTORAGEPOLICY</storagePolicyName>
 				</dataBackupStoragePolicy>
 				<logBackupStoragePolicy>
-					<storagePolicyName>storp00</storagePolicyName>
+					<storagePolicyName>$OLDSTORAGEPOLICY</storagePolicyName>
 				</logBackupStoragePolicy>
 			</storageDevice>
 		</commonProperties>
