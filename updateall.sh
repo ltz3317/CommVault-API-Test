@@ -31,11 +31,11 @@ else
 		</client>
 		<clientProps>
 			<dataInterfacePair active="true">
-				<DestInterface ClientId="2" Interface="10.60.19.17"/>
+				<DestInterface ClientId="$MACLIENTID1" Interface="$MAIP1"/>
 				<SourceInterface ClientId="$CLIENTID" Interface="$CLIENTIP"/>
 			</dataInterfacePair>
 			<dataInterfacePair active="true">
-				<DestInterface ClientId="14" Interface="10.60.19.16"/>
+				<DestInterface ClientId="$MACLIENTID2" Interface="$MAIP2"/>
 				<SourceInterface ClientId="$CLIENTID" Interface="$CLIENTIP"/>
 			</dataInterfacePair>
 		</clientProps>

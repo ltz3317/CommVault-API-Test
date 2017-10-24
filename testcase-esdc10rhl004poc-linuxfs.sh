@@ -6,6 +6,10 @@ export STORAGEPOLICY="storp01"
 export SCHEPNAME="schep01"
 export CLIENTGROUPNAME="clientgroup01"
 export CLIENTHOSTNAME=$CLIENTNAME.esdc10.local
+export MACLIENTID1="2"
+export MAIP1="10.60.19.17"
+export MACLIENTID2="14"
+export MAIP2="10.60.19.16"
 
 ## APPNAME can be "Windows File System", "SQL Server", "Linux File System", "MySQL" or "Virtual Server" ##
 export APPNAME="Linux File System"
