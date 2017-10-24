@@ -87,6 +87,12 @@ fi
 SUBCLIENT=$($DIR/get_subclient_by_clientid.sh)
 SUBCLIENTNAME=$(echo $SUBCLIENT | awk -F ':' '{print $1}')
 SUBCLIENTID=$(echo $SUBCLIENT | awk -F ':' '{print $2}')
+if [ -z "$SUBCLIENT" ] && [ "$APPNAME" = "Virtual Server" ]
+then
+	SUBCLIENT=$(eval $CURLCMD -L $BASEURI"/subclient?clientId=$CLIENTID" | xmlstarlet sel -t -m "//subClientEntity[@appName='$APPNAME' and @backupsetName='$BACKUPSETNAME']" -v @subclientName -o ":"  -v @subclientId)
+	SUBCLIENTNAME=$(echo $SUBCLIENT | awk -F ':' '{print $1}')
+	SUBCLIENTID=$(echo $SUBCLIENT | awk -F ':' '{print $2}')
+fi
 echo "Subclient Name: $SUBCLIENTNAME"
 echo "Subclient ID: $SUBCLIENTID"
 if [ ! -z "$SUBCLIENTID" ]
