@@ -34,6 +34,16 @@ then
 	BACKUPSETID=$(echo $BACKUPSET | awk -F ':' '{print $2}')
 	echo "Backupset Name: $BACKUPSETNAME"
 	echo "Backupset ID: $BACKUPSETID"
+elif [ "$APPNAME" = "Virtual Server" ]
+then
+        ## Get backupset by client ID ##
+
+	disp "Getting backupset by client ID."
+        BACKUPSET=$($DIR/get_vsa_backupset_by_clientid.sh)
+        BACKUPSETNAME=$(echo $BACKUPSET | awk -F ':' '{print $1}')
+        BACKUPSETID=$(echo $BACKUPSET | awk -F ':' '{print $2}')
+        echo "Backupset Name: $BACKUPSETNAME"
+        echo "Backupset ID: $BACKUPSETID"
 fi
 
 disp "Getting subclient by client ID."
