@@ -15,6 +15,7 @@ get_client_info()
 		echo "Client Name: $CLIENTNAME"
 		export CLIENTID=$($DIR/get_clientid_by_clientname.sh)
 	fi
+	echo "Client Name: $CLIENTNAME"
 	echo "Client ID: $CLIENTID"
 
 	CURLOUT=$(eval $CURLCMD -L $BASEURI"/Client/$CLIENTID")
