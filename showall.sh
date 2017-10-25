@@ -29,7 +29,7 @@ get_clientgroup_info()
 	echo "Client Group Name: $CLIENTGROUPNAME"
 	export CLIENTGROUPID=$($DIR/get_clientgroupid_by_clientgroupname.sh)
 	echo "Client Group ID: $CLIENTGROUPID"
-	eval $CURLCMD -L $BASEURI"/ClientGroup/7" | xmlstarlet sel -t -m "//associatedClients[@clientName='"$CLIENTNAME"']" -o "Associated Client Name: " -v @clientName -n
+	eval $CURLCMD -L $BASEURI"/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m "//associatedClients[@clientName='"$CLIENTNAME"']" -o "Associated Client Name: " -v @clientName -n
 }
 
 case "$APPNAME" in
