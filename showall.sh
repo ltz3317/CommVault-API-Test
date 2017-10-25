@@ -12,7 +12,6 @@ get_client_info()
 	if [ -z "$CLIENTID" ]
 	then
 		export CLIENTNAME=$(eval $CURLCMD -L $BASEURI/Client | xmlstarlet sel -t -m "//clientEntity[starts-with(@clientName, '$CLIENTNAME.201')]" -v @clientName -n)
-		echo "Client Name: $CLIENTNAME"
 		export CLIENTID=$($DIR/get_clientid_by_clientname.sh)
 	fi
 	echo "Client Name: $CLIENTNAME"
