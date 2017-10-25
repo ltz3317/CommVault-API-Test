@@ -18,5 +18,14 @@ export APPNAME="MySQL"
 ## Set DATABASES for databases if necessary. e.g. "mysql db01". ##
 export DATABASES="mysql db01"
 
+## Set the below parameters for MySQL only. ##
+export BINDIR="/usr/bin"
+export LOGDIR="/var/log"
+export CONFIGFILE="/etc/my.cnf"
+export SOCKET="/var/lib/mysql/mysql.sock"
+export SAUSER="root"
+export SAPASSWORD="Phys!010gy"
+export UNIXUSER="root"
+
 ## Set VM as Virtual Machine name if necessary. Only single item is allowed. ##
 # export VM="ESDC10WIN002POC"

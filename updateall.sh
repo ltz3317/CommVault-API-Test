@@ -144,46 +144,46 @@ BODY
 elif [ "$APPNAME" = "MySQL" ]
 then
 	disp "Creating MySQL instance."
-	eval $CURLCMD -d @- << BODY -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
-
-<App_CreateInstanceRequest>
-<instanceProperties>
-		<instance>
-			<clientName>$CLIENTNAME</clientName>
-			<appName>MySQL</appName>
-			<instanceName>$CLIENTNAME</instanceName>
-		</instance>
-		<security>
-			<associatedUserGroups>
-				<userGroupName/>
-			</associatedUserGroups>
-			<associatedUserGroupsOperationType>ADD</associatedUserGroupsOperationType>
-		</security>
-		<mySqlInstance>
-			<BinaryDirectory>/usr/bin</BinaryDirectory>
-			<LogDataDirectory>/var/log</LogDataDirectory>
-			<ConfigFile>/etc/my.cnf</ConfigFile>
-			<port>/var/lib/mysql/mysql.sock</port>
-			<EnableAutoDiscovery/>
-			<SAUser>
-				<userName>root</userName>
-				<password>Phys!010gy</password>
-			</SAUser>
-			<unixUser>
-				<userName>root</userName>
-			</unixUser>
-			<mysqlStorageDevice>
-				<logBackupStoragePolicy>
-					<storagePolicyName>$STORAGEPOLICY</storagePolicyName>
-				</logBackupStoragePolicy>
-				<commandLineStoragePolicy>
-					<storagePolicyName>$STORAGEPOLICY</storagePolicyName>
-				</commandLineStoragePolicy>
-			</mysqlStorageDevice>
-		</mySqlInstance>          
-	</instanceProperties>
-</App_CreateInstanceRequest>
-BODY
+	XMLBODY="
+		<App_CreateInstanceRequest>
+		<instanceProperties>
+				<instance>
+					<clientName>$CLIENTNAME</clientName>
+					<appName>MySQL</appName>
+					<instanceName>$CLIENTNAME</instanceName>
+				</instance>
+				<security>
+					<associatedUserGroups>
+						<userGroupName/>
+					</associatedUserGroups>
+					<associatedUserGroupsOperationType>ADD</associatedUserGroupsOperationType>
+				</security>
+				<mySqlInstance>
+					<BinaryDirectory>$BINDIR</BinaryDirectory>
+					<LogDataDirectory>$LOGDIR</LogDataDirectory>
+					<ConfigFile>$CONFIGFILE</ConfigFile>
+					<port>$SOCKET</port>
+					<EnableAutoDiscovery/>
+					<SAUser>
+						<userName>$SAUSER</userName>
+						<password>$SAPASSWORD</password>
+					</SAUser>
+					<unixUser>
+						<userName>$UNIXUSER</userName>
+					</unixUser>
+					<mysqlStorageDevice>
+						<logBackupStoragePolicy>
+							<storagePolicyName>$STORAGEPOLICY</storagePolicyName>
+						</logBackupStoragePolicy>
+						<commandLineStoragePolicy>
+							<storagePolicyName>$STORAGEPOLICY</storagePolicyName>
+						</commandLineStoragePolicy>
+					</mysqlStorageDevice>
+				</mySqlInstance>          
+			</instanceProperties>
+		</App_CreateInstanceRequest>
+	"
+	eval $CURLCMD -d \"$XMLBODY\" -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 
 elif [ "$APPNAME" = "Virtual Server" ]
 then
