@@ -71,16 +71,26 @@ then
 </App_PerformClientGroupReq>
 BODY
 
-	disp "Restarting client services."
-	eval $CURLCMD -d @- << BODY -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //EVGui_GenericResp -o "Error code: " -v @errorCode -n
-
-<EVGui_ServiceControlRequest action="RESTART">
-	<services allServices="true"/>
-	<client clientName="$CLIENTNAME"/>
-</EVGui_ServiceControlRequest>
-BODY
-
-	sleep 60	## Let the iDataAgent restart finishes. ##
+# 	disp "Restarting client services."
+# 	eval $CURLCMD -d @- << BODY -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //EVGui_GenericResp -o "Error code: " -v @errorCode -n
+# 
+# <EVGui_ServiceControlRequest action="RESTART">
+# 	<services allServices="true"/>
+# 	<client clientName="$CLIENTNAME"/>
+# </EVGui_ServiceControlRequest>
+# BODY
+# 
+# 	sleep 60	## Let the iDataAgent restart finishes. ##
+	disp "Pushing firewall configuration."
+	XMLBODY="
+		<App_PushFirewallConfigurationRequest>
+			<entity>
+				<clientName>$CLIENTNAME</clientName>
+				<clientGroupName=$CLIENTGROUPNAME</clientGroupName>
+			</entity>
+		</App_PushFirewallConfigurationRequest>
+	"
+	eval $CURLCMD -d \"$XMLBODY\" -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet fo
 fi
 
 ## MSSQL instance configuration ##
@@ -184,6 +194,7 @@ then
 		</App_CreateInstanceRequest>
 	"
 	## eval $CURLCMD -d \"$XMLBODY\" -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	COUNT=1
 	while [ "$EC" != "0" ] && [ "$COUNT" -lt 101 ]
 	do
 		echo "Attempt: $COUNT"
