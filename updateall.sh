@@ -183,7 +183,14 @@ then
 			</instanceProperties>
 		</App_CreateInstanceRequest>
 	"
-	eval $CURLCMD -d \"$XMLBODY\" -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	## eval $CURLCMD -d \"$XMLBODY\" -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
+	while [ "$EC" != "0" ] && [ "$COUNT" -lt 101 ]
+	do
+		echo "Attempt: $COUNT"
+		EC=$(eval $CURLCMD -d \"$XMLBODY\" -L "$BASEURI/QCommand/qoperation%20execute" | xmlstarlet sel -t -m //response -v @errorCode)
+		echo "Error code: $EC"
+		COUNT=$(expr "$COUNT" + 1)
+	done
 
 elif [ "$APPNAME" = "Virtual Server" ]
 then
