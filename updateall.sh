@@ -86,7 +86,7 @@ BODY
 		<App_PushFirewallConfigurationRequest>
 			<entity>
 				<clientName>$CLIENTNAME</clientName>
-				<clientGroupName=$CLIENTGROUPNAME</clientGroupName>
+				<clientGroupName>$CLIENTGROUPNAME</clientGroupName>
 			</entity>
 		</App_PushFirewallConfigurationRequest>
 	"
