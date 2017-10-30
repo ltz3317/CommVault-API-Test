@@ -28,7 +28,8 @@ get_clientgroup_info()
 	echo "Client Group Name: $CLIENTGROUPNAME"
 	export CLIENTGROUPID=$($DIR/get_clientgroupid_by_clientgroupname.sh)
 	echo "Client Group ID: $CLIENTGROUPID"
-	eval $CURLCMD -L $BASEURI"/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m "//associatedClients[@clientName='"$CLIENTNAME"']" -o "Associated Client Name: " -v @clientName -n
+	## eval $CURLCMD -L $BASEURI"/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m "//associatedClients[@clientName='"$CLIENTNAME"']" -o "Associated Client Name: " -v @clientName -n
+	eval $CURLCMD -L $BASEURI"/ClientGroup/$CLIENTGROUPID" | xmlstarlet sel -t -m "//associatedClients[@clientName='"$(echo $CLIENTNAME | sed 's/.*/\L&/')"']" -o "Associated Client Name: " -v @clientName -n
 }
 
 case "$APPNAME" in
@@ -57,9 +58,9 @@ case "$APPNAME" in
 		if [ -z "$SUBCLIENT" ]
 		then
 			SUBCLIENT=$(eval $CURLCMD -L $BASEURI"/subclient?clientId=$CLIENTID" | xmlstarlet sel -t -m "//subClientEntity[@appName='$APPNAME' and @backupsetName='$BACKUPSETNAME']" -v @subclientName -o ":"  -v @subclientId)
-			SUBCLIENTNAME=$(echo $SUBCLIENT | awk -F ':' '{print $1}')
-			SUBCLIENTID=$(echo $SUBCLIENT | awk -F ':' '{print $2}')
 		fi
+		SUBCLIENTNAME=$(echo $SUBCLIENT | awk -F ':' '{print $1}')
+		SUBCLIENTID=$(echo $SUBCLIENT | awk -F ':' '{print $2}')
 		echo "Subclient Name: $SUBCLIENTNAME"
 		echo "Subclient ID: $SUBCLIENTID"
 		if [ ! -z "$SUBCLIENTID" ]
