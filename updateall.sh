@@ -346,7 +346,6 @@ case "$APPNAME" in
 
 		get_subclient_by_clientid
 		disp "Setting subclient properties for $APPNAME."
-		## eval $CURLCMD -d @- << BODY -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 		XMLBODY="
 			<App_UpdateSubClientPropertiesRequest>
 				<newName>$VM</newName>
@@ -370,8 +369,7 @@ case "$APPNAME" in
 				</subClientProperties>
 			</App_UpdateSubClientPropertiesRequest>
 		"
-		## eval $CURLCMD -d \"$XMLBODY\" -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
-		eval $CURLCMD -d \"$XMLBODY\" -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet fo
+		eval $CURLCMD -d \"$XMLBODY\" -L $BASEURI"/Subclient/$SUBCLIENTID" | xmlstarlet sel -t -m //response -o "Error code: " -v @errorCode -n
 	;;
 esac
 
